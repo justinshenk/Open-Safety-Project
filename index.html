@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>The Open Safety Project — Scalable infrastructure for independent AI safety research</title>
+<meta name="description" content="The Open Safety Project turns an open-source repository into a structured apprenticeship for AI safety research. Public infrastructure, graphs, and explainers for newcomers." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,500;0,600;0,700;0,800;0,900;1,600&family=Spectral:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --black:#111111;
+    --ink:#171717;
+    --paper:#ffffff;
+    --panel:#f3f2ee;
+    --panel-2:#ebeae4;
+    --grey:#5f5f5f;
+    --grey-2:#8c8c8c;
+    --line:#111111;
+    --hair:#d9d8d2;
+    --klein:#002fa7;       /* International Klein Blue — the signature accent */
+    --klein-dark:#001f73;
+    --klein-soft:#e6ebf7;
+    --signal:#ff3b1d;      /* high-intensity feature accent, used sparingly */
+    --signal-soft:#ffe7e2;
+    --maxw:1200px;
+    --sans:'Archivo','Helvetica Neue',Arial,sans-serif;
+    --serif:'Spectral',Georgia,'Times New Roman',serif;
+    --mono:'Space Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    font-family:var(--serif);
+    font-size:19px;
+    line-height:1.62;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  ::selection{background:var(--klein);color:#fff;}
+  a{color:var(--klein);text-decoration:none;}
+  a:hover{text-decoration:underline;text-decoration-thickness:2px;text-underline-offset:3px;}
+  img,svg{max-width:100%;}
+
+  .wrap{max-width:var(--maxw);margin:0 auto;padding:0 28px;}
+  .rule{border:0;border-top:1px solid var(--line);margin:0;}
+  .rule--thick{border-top:4px solid var(--line);}
+
+  /* ---------- Kicker / labels ---------- */
+  .kicker{
+    font-family:var(--mono);
+    font-weight:700;
+    font-size:12px;
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    color:var(--klein);
+    display:inline-flex;
+    align-items:center;
+    gap:9px;
+  }
+  .kicker::before{
+    content:"";
+    width:22px;height:2px;background:var(--klein);display:inline-block;
+  }
+  .kicker.k-signal{color:var(--signal);}
+  .kicker.k-signal::before{background:var(--signal);}
+  .kicker.k-ink{color:var(--black);}
+  .kicker.k-ink::before{background:var(--black);}
+
+  /* ---------- Typography ---------- */
+  h1,h2,h3,h4{font-family:var(--sans);color:var(--black);margin:0;line-height:1.04;letter-spacing:-.015em;}
+  h2{font-weight:800;font-size:clamp(30px,5vw,52px);}
+  h3{font-weight:700;font-size:clamp(21px,2.6vw,28px);letter-spacing:-.01em;}
+  h4{font-weight:700;font-size:18px;letter-spacing:-.005em;}
+  p{margin:0 0 1.05em;}
+  .lead{font-size:clamp(20px,2.3vw,25px);line-height:1.5;color:var(--ink);}
+  .dim{color:var(--grey);}
+  strong{font-weight:600;color:var(--black);}
+
+  /* ---------- Sticky masthead ---------- */
+  .topbar{
+    position:sticky;top:0;z-index:50;
+    background:rgba(255,255,255,.94);
+    backdrop-filter:saturate(140%) blur(6px);
+    border-bottom:1px solid var(--line);
+  }
+  .topbar__in{display:flex;align-items:center;justify-content:space-between;height:54px;}
+  .topbar__brand{
+    font-family:var(--sans);font-weight:900;font-size:15px;letter-spacing:.01em;
+    text-transform:uppercase;color:var(--black);white-space:nowrap;
+  }
+  .topbar__brand a{color:inherit;}
+  .topbar__brand a:hover{text-decoration:none;}
+  .topbar__nav{display:flex;align-items:center;gap:26px;}
+  .topbar__nav a{
+    font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.16em;
+    text-transform:uppercase;color:var(--black);
+  }
+  .topbar__nav a:hover{color:var(--klein);text-decoration:none;}
+  .btn{
+    font-family:var(--mono);font-size:11.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+    background:var(--klein);color:#fff;padding:9px 15px;display:inline-flex;gap:7px;align-items:center;
+    border:1px solid var(--klein);transition:background .15s,color .15s;
+  }
+  .btn:hover{background:#001f73;color:#fff;text-decoration:none;}
+  .btn--ghost{background:transparent;color:var(--black);border-color:var(--black);}
+  .btn--ghost:hover{background:var(--black);color:#fff;}
+  .btn--signal{background:var(--signal);border-color:var(--signal);}
+  .btn--signal:hover{background:#d62b12;}
+  @media(max-width:820px){.topbar__nav .navlink{display:none;}}
+
+  /* ---------- Nameplate / hero ---------- */
+  .dateline{
+    display:flex;justify-content:space-between;align-items:center;gap:16px;
+    font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;
+    color:var(--grey);padding:9px 0;flex-wrap:wrap;
+  }
+  .dateline span{white-space:nowrap;}
+  .nameplate{padding:18px 0 0;}
+  .nameplate h1{
+    font-family:var(--sans);font-weight:900;color:var(--black);
+    font-size:clamp(40px,10.6vw,148px);line-height:.86;letter-spacing:-.03em;
+    text-transform:uppercase;margin:0;
+  }
+  .nameplate h1 .blue{color:var(--klein);}
+
+  .hero{padding:30px 0 56px;}
+  .hero__grid{display:grid;grid-template-columns:1.55fr 1fr;gap:46px;align-items:start;}
+  .hero__headline{
+    font-family:var(--sans);font-weight:800;color:var(--black);
+    font-size:clamp(28px,4.4vw,50px);line-height:1.02;letter-spacing:-.02em;margin:18px 0 22px;
+  }
+  .hero__sub{font-size:clamp(19px,2vw,22px);line-height:1.5;color:var(--ink);}
+  .hero__cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:26px;}
+  .hero__aside{
+    border-left:3px solid var(--black);padding:4px 0 4px 22px;font-size:17px;line-height:1.5;
+  }
+  .hero__aside .who{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--grey);}
+  @media(max-width:880px){.hero__grid{grid-template-columns:1fr;gap:30px;}}
+
+  /* ---------- Section scaffold ---------- */
+  section{padding:62px 0;border-top:1px solid var(--line);}
+  .sec-head{display:grid;grid-template-columns:auto 1fr;gap:26px;align-items:end;margin-bottom:38px;}
+  .sec-head__num{
+    font-family:var(--mono);font-weight:700;font-size:13px;letter-spacing:.1em;color:var(--klein);
+    border:1px solid var(--klein);border-radius:50%;width:46px;height:46px;display:flex;align-items:center;justify-content:center;
+  }
+  .sec-head__txt .kicker{margin-bottom:12px;}
+  @media(max-width:620px){.sec-head{grid-template-columns:1fr;gap:14px;}.sec-head__num{display:none;}}
+
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:44px;}
+  .threecol{display:grid;grid-template-columns:repeat(3,1fr);gap:0;}
+  @media(max-width:820px){.twocol{grid-template-columns:1fr;gap:26px;}.threecol{grid-template-columns:1fr;}}
+
+  /* ---------- Figure / graphs ---------- */
+  .figure{border:1px solid var(--line);background:var(--paper);}
+  .figure__head{
+    display:flex;justify-content:space-between;align-items:baseline;gap:14px;
+    padding:14px 18px;border-bottom:1px solid var(--line);background:var(--black);color:#fff;flex-wrap:wrap;
+  }
+  .figure__head .ftitle{font-family:var(--sans);font-weight:800;font-size:15px;letter-spacing:.01em;text-transform:uppercase;color:#fff;}
+  .figure__head .ftag{font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#bdbdbd;}
+  .figure__body{padding:22px 20px 8px;}
+  .figure__note{
+    padding:12px 18px;border-top:1px solid var(--hair);
+    font-family:var(--mono);font-size:11px;letter-spacing:.04em;color:var(--grey);text-transform:uppercase;
+  }
+  .chart{width:100%;height:auto;display:block;}
+  .chart text{font-family:var(--mono);fill:var(--ink);}
+  .bar{fill:var(--klein);}
+  .bar.is-anim{transform:scaleY(0);transform-origin:bottom;transform-box:fill-box;transition:transform 1s cubic-bezier(.2,.7,.2,1);}
+  .reveal.is-visible .bar.is-anim{transform:scaleY(1);}
+
+  /* ---------- Pipeline (lifecycle) ---------- */
+  .pipe{display:grid;grid-template-columns:repeat(6,1fr);gap:0;border:1px solid var(--line);}
+  .stage{position:relative;padding:20px 18px 22px;border-right:1px solid var(--line);background:var(--paper);}
+  .stage:last-child{border-right:0;}
+  .stage__top{height:5px;margin:-20px -18px 16px;background:var(--klein);}
+  .stage--junior .stage__top{background:var(--signal);}
+  .stage__role{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--klein);}
+  .stage--junior .stage__role{color:var(--signal);}
+  .stage__n{font-family:var(--sans);font-weight:900;font-size:30px;color:var(--black);line-height:1;margin:6px 0 4px;}
+  .stage h4{margin-bottom:7px;}
+  .stage p{font-size:14.5px;line-height:1.45;color:var(--grey);margin:0;}
+  .stage__arrow{position:absolute;right:-9px;top:24px;z-index:2;width:17px;height:17px;background:#fff;border-top:1px solid var(--line);border-right:1px solid var(--line);transform:rotate(45deg);}
+  .stage:last-child .stage__arrow{display:none;}
+  .pipe-legend{display:flex;gap:24px;flex-wrap:wrap;margin-top:16px;font-family:var(--mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--grey);}
+  .pipe-legend i{width:12px;height:12px;display:inline-block;margin-right:7px;vertical-align:-1px;}
+  @media(max-width:900px){.pipe{grid-template-columns:repeat(2,1fr);}.stage{border-bottom:1px solid var(--line);}.stage__arrow{display:none;}.stage:nth-child(2n){border-right:0;}}
+  @media(max-width:520px){.pipe{grid-template-columns:1fr;}.stage{border-right:0;}}
+
+  /* ---------- Explainer cards ---------- */
+  .explainer{background:var(--panel);border:1px solid var(--line);padding:0;}
+  .explainer__bar{background:var(--klein);color:#fff;padding:10px 18px;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;}
+  .explainer__in{padding:24px 22px;}
+  .explainer__in .lead{margin-bottom:0;}
+
+  .glossary{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line);border-bottom:0;}
+  .term{padding:20px;border-bottom:1px solid var(--line);border-right:1px solid var(--line);}
+  .term:nth-child(3n){border-right:0;}
+  .term dt{font-family:var(--sans);font-weight:800;font-size:17px;color:var(--black);margin-bottom:5px;}
+  .term dd{margin:0;font-size:15px;line-height:1.5;color:var(--grey);}
+  .term .mono-tag{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--klein);display:block;margin-bottom:9px;}
+  @media(max-width:820px){.glossary{grid-template-columns:1fr;}.term{border-right:0;}}
+
+  /* ---------- Steps (first two weeks) ---------- */
+  .steps{counter-reset:step;border-top:1px solid var(--line);}
+  .step{display:grid;grid-template-columns:64px 1fr;gap:22px;padding:22px 0;border-bottom:1px solid var(--hair);align-items:start;}
+  .step__n{font-family:var(--sans);font-weight:900;font-size:34px;color:var(--klein);line-height:1;}
+  .step h4{margin-bottom:5px;}
+  .step p{margin:0;font-size:16px;color:var(--grey);}
+
+  /* ---------- Map of AI safety ---------- */
+  .map{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border:1px solid var(--line);}
+  .field{padding:18px 16px 22px;border-right:1px solid var(--hair);background:var(--paper);}
+  .field:last-child{border-right:0;}
+  .field--on{background:var(--klein);}
+  .field--on *{color:#fff !important;}
+  .field--on .field__tag{color:#cdd8f5 !important;}
+  .field__tag{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--grey-2);}
+  .field h4{font-size:16px;margin:8px 0 8px;}
+  .field p{font-size:13.5px;line-height:1.45;color:var(--grey);margin:0;}
+  .field__pill{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;background:#fff;color:var(--klein);padding:4px 8px;}
+  .field--on .field__pill{background:#fff;color:var(--klein) !important;}
+  @media(max-width:900px){.map{grid-template-columns:repeat(2,1fr);}.field{border-bottom:1px solid var(--hair);}}
+  @media(max-width:560px){.map{grid-template-columns:1fr;}}
+
+  /* ---------- Stat strip ---------- */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line);}
+  .stat{padding:28px 24px;border-right:1px solid var(--line);}
+  .stat:last-child{border-right:0;}
+  .stat__n{font-family:var(--sans);font-weight:900;font-size:clamp(42px,6vw,64px);color:var(--klein);line-height:.9;letter-spacing:-.02em;}
+  .stat__l{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--grey);margin-top:12px;}
+  @media(max-width:760px){.stats{grid-template-columns:1fr;}.stat{border-right:0;border-bottom:1px solid var(--line);}.stat:last-child{border-bottom:0;}}
+
+  /* ---------- Build list ---------- */
+  .build{display:grid;grid-template-columns:1fr 1fr;gap:0 44px;}
+  .check{display:grid;grid-template-columns:30px 1fr;gap:14px;padding:16px 0;border-bottom:1px solid var(--hair);align-items:start;}
+  .check svg{margin-top:3px;}
+  .check h4{margin-bottom:3px;}
+  .check p{margin:0;font-size:15px;color:var(--grey);}
+  @media(max-width:760px){.build{grid-template-columns:1fr;}}
+
+  /* ---------- Team ---------- */
+  .team{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border:1px solid var(--line);}
+  .member{padding:22px 18px;border-right:1px solid var(--line);}
+  .member:last-child{border-right:0;}
+  .member .avatar{
+    width:54px;height:54px;border-radius:50%;background:var(--klein);color:#fff;display:flex;align-items:center;justify-content:center;
+    font-family:var(--sans);font-weight:900;font-size:20px;margin-bottom:14px;letter-spacing:-.02em;
+  }
+  .member h4{font-size:17px;margin-bottom:6px;}
+  .member .role{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--klein);}
+  @media(max-width:900px){.team{grid-template-columns:repeat(2,1fr);}.member{border-bottom:1px solid var(--line);}.member:nth-child(2n){border-right:0;}}
+  @media(max-width:520px){.team{grid-template-columns:1fr;}.member{border-right:0;}}
+
+  /* ---------- Background ---------- */
+  .bg-list{list-style:none;padding:0;margin:0;border-top:1px solid var(--line);}
+  .bg-list li{display:grid;grid-template-columns:54px 1fr;gap:20px;padding:20px 0;border-bottom:1px solid var(--hair);font-size:17px;line-height:1.55;}
+  .bg-list .bn{font-family:var(--sans);font-weight:900;font-size:24px;color:var(--klein);}
+
+  /* ---------- Future directions ---------- */
+  .future{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--line);}
+  .fcard{padding:24px 20px;border-right:1px solid var(--line);}
+  .fcard:last-child{border-right:0;}
+  .fcard .fn{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.14em;color:var(--signal);text-transform:uppercase;}
+  .fcard h4{margin:10px 0 8px;}
+  .fcard p{font-size:15px;color:var(--grey);margin:0;}
+  @media(max-width:820px){.future{grid-template-columns:1fr;}.fcard{border-right:0;border-bottom:1px solid var(--line);}.fcard:last-child{border-bottom:0;}}
+
+  /* ---------- Discovery / pull-quote ---------- */
+  .discovery{background:var(--black);color:#fff;}
+  .discovery h2{color:#fff;}
+  .discovery .kicker{color:#fff;}
+  .discovery .kicker::before{background:#fff;}
+  .discovery a{color:#fff;}
+  .q-list{list-style:none;padding:0;margin:26px 0 0;}
+  .q-list li{
+    font-family:var(--sans);font-weight:700;font-size:clamp(22px,3.4vw,34px);line-height:1.12;letter-spacing:-.015em;
+    padding:22px 0;border-top:1px solid #333;color:#fff;display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:baseline;
+  }
+  .q-list li .qn{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--signal);letter-spacing:.05em;}
+
+  /* ---------- Footer ---------- */
+  footer{background:var(--paper);border-top:4px solid var(--line);padding:48px 0 60px;}
+  .foot__name{font-family:var(--sans);font-weight:900;font-size:clamp(30px,7vw,76px);line-height:.9;letter-spacing:-.03em;text-transform:uppercase;color:var(--black);}
+  .foot__row{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-top:24px;align-items:flex-end;}
+  .foot__links{display:flex;gap:22px;flex-wrap:wrap;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;}
+  .foot__links a{color:var(--black);}
+  .foot__meta{font-family:var(--mono);font-size:11px;letter-spacing:.06em;color:var(--grey);text-transform:uppercase;max-width:420px;text-align:right;}
+
+  /* ---------- Reveal animation ---------- */
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1);}
+  .reveal.is-visible{opacity:1;transform:none;}
+  @media(prefers-reduced-motion:reduce){
+    .reveal{opacity:1;transform:none;transition:none;}
+    .bar.is-anim{transform:none;transition:none;}
+    html{scroll-behavior:auto;}
+  }
+
+  .mark{background:linear-gradient(transparent 62%,rgba(0,47,167,.18) 62%);padding:0 1px;}
+</style>
+</head>
+<body>
+
+<!-- ===================== STICKY MASTHEAD ===================== -->
+<header class="topbar">
+  <div class="wrap topbar__in">
+    <div class="topbar__brand"><a href="#top">The Open Safety Project</a></div>
+    <nav class="topbar__nav">
+      <a class="navlink" href="#idea">The Idea</a>
+      <a class="navlink" href="#start">Start Here</a>
+      <a class="navlink" href="#how">How It Works</a>
+      <a class="navlink" href="#proof">Proof</a>
+      <a class="navlink" href="#team">Team</a>
+      <a class="btn" href="https://github.com/users/justinshenk/projects/2" target="_blank" rel="noopener">Kanban&nbsp;↗</a>
+    </nav>
+  </div>
+</header>
+
+<a id="top"></a>
+
+<!-- ===================== NAMEPLATE ===================== -->
+<div class="wrap">
+  <div class="dateline">
+    <span>Vol. 1 — Public Infrastructure</span>
+    <span>Independent AI Safety Research</span>
+    <span>Est. 2026 · Open Source</span>
+  </div>
+</div>
+<hr class="rule rule--thick" />
+<div class="wrap nameplate">
+  <h1>The Open<br />Safety <span class="blue">Project</span></h1>
+</div>
+<div class="wrap" style="padding-top:14px;">
+  <hr class="rule" />
+</div>
+
+<!-- ===================== HERO ===================== -->
+<div class="wrap hero">
+  <div class="hero__grid">
+    <div class="reveal">
+      <div class="kicker">The Dispatch</div>
+      <p class="hero__headline">Scalable community and research infrastructure for independent AI safety research.</p>
+      <p class="hero__sub">A lot of people want to start working on AI safety but don't know where to begin. We're building the public infrastructure to fix that — turning an open-source repository into a <span class="mark">structured apprenticeship</span> where every issue is a self-contained experiment you can claim, run, and carry through to publication.</p>
+      <div class="hero__cta">
+        <a class="btn" href="https://github.com/users/justinshenk/projects/2" target="_blank" rel="noopener">View the public kanban ↗</a>
+        <a class="btn btn--ghost" href="#start">New here? Start →</a>
+      </div>
+    </div>
+    <aside class="hero__aside reveal">
+      <div class="who">Who this is for</div>
+      <p style="margin-top:10px;">Newcomers with a <strong>basic programming background</strong> who want a real, ownable first project in AI safety — and the mentors who want to scale how many of them they can support.</p>
+      <div class="who" style="margin-top:18px;">In this issue</div>
+      <p style="margin:8px 0 0;font-size:15px;line-height:1.7;">
+        § 01 — The onboarding gap<br />
+        § 02 — New to AI safety? Start here<br />
+        § 03 — How the pipeline works<br />
+        § 04 — Proof of concept<br />
+        § 05 — What we're building<br />
+        § 06 — Team &amp; background
+      </p>
+    </aside>
+  </div>
+</div>
+
+<!-- ===================== 01 · THE ONBOARDING GAP ===================== -->
+<section id="idea">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-head__num">01</div>
+      <div class="sec-head__txt">
+        <div class="kicker">The Problem</div>
+        <h2>The onboarding gap</h2>
+      </div>
+    </div>
+
+    <div class="twocol">
+      <div class="reveal">
+        <p class="lead">Interest in AI safety is enormous. The number of people who can find a clear, ownable place to <em>start</em> is not.</p>
+        <p>Motivated newcomers stall in the space between wanting to help and finding a concrete first experiment. There's no shortage of reading lists — but reading lists don't review your code, integrate your results, or carry them to publication.</p>
+        <p>The Open Safety Project closes that gap with a single, reusable pattern: <strong>every GitHub issue is a self-contained experiment.</strong> Mentors draft, label, and assign experiments as tickets; junior researchers claim and own them; mentors review, integrate, and help carry the work through to publication.</p>
+        <p class="dim" style="font-size:16px;">Coordination runs on GitHub Projects, communication over Slack, with optional Claude Code integration so mentors can log the exact commands behind each result.</p>
+      </div>
+
+      <!-- GRAPH 1: ONBOARDING GAP BAR CHART -->
+      <div class="reveal">
+        <figure class="figure">
+          <figcaption class="figure__head">
+            <span class="ftitle">Where newcomers drop off</span>
+            <span class="ftag">Fig. 1 — Funnel</span>
+          </figcaption>
+          <div class="figure__body">
+            <svg class="chart" viewBox="0 0 780 430" role="img" aria-label="Bar chart showing newcomers dropping off from wanting to contribute, to knowing where to begin, to finding an ownable first project.">
+              <!-- baseline -->
+              <line x1="70" y1="360" x2="710" y2="360" stroke="#111" stroke-width="2"/>
+              <!-- gap reference line -->
+              <line x1="110" y1="80" x2="690" y2="80" stroke="#ff3b1d" stroke-width="1.5" stroke-dasharray="5 5"/>
+              <!-- bars -->
+              <rect class="bar is-anim" x="110" y="80"  width="150" height="280" />
+              <rect class="bar is-anim" x="330" y="262" width="150" height="98"  />
+              <rect class="bar is-anim" x="550" y="326" width="150" height="34"  />
+              <!-- values -->
+              <text x="185" y="66"  text-anchor="middle" font-size="22" font-weight="700" fill="#111">Many</text>
+              <text x="405" y="248" text-anchor="middle" font-size="20" font-weight="700" fill="#002fa7">Some</text>
+              <text x="625" y="312" text-anchor="middle" font-size="20" font-weight="700" fill="#002fa7">Few</text>
+              <!-- the gap bracket -->
+              <line x1="700" y1="80" x2="700" y2="326" stroke="#ff3b1d" stroke-width="1.5"/>
+              <line x1="695" y1="80"  x2="705" y2="80"  stroke="#ff3b1d" stroke-width="1.5"/>
+              <line x1="695" y1="326" x2="705" y2="326" stroke="#ff3b1d" stroke-width="1.5"/>
+              <text x="734" y="205" text-anchor="middle" font-size="12" font-weight="700" fill="#ff3b1d" transform="rotate(90,734,205)" letter-spacing="2">THE GAP</text>
+              <!-- labels -->
+              <text x="185" y="385" text-anchor="middle" font-size="12.5" fill="#111">Want to contribute</text>
+              <text x="185" y="402" text-anchor="middle" font-size="12.5" fill="#111">to AI safety</text>
+              <text x="405" y="385" text-anchor="middle" font-size="12.5" fill="#111">Know where</text>
+              <text x="405" y="402" text-anchor="middle" font-size="12.5" fill="#111">to begin</text>
+              <text x="625" y="385" text-anchor="middle" font-size="12.5" fill="#111">Find an ownable</text>
+              <text x="625" y="402" text-anchor="middle" font-size="12.5" fill="#111">first project</text>
+            </svg>
+          </div>
+          <div class="figure__note">Illustrative — the drop-off the project is built to close.</div>
+        </figure>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 02 · START HERE (EXPLAINER) ===================== -->
+<section id="start">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-head__num">02</div>
+      <div class="sec-head__txt">
+        <div class="kicker k-signal">For Newcomers</div>
+        <h2>New to AI safety? Start here</h2>
+      </div>
+    </div>
+
+    <div class="explainer reveal" style="margin-bottom:34px;">
+      <div class="explainer__bar">In one minute</div>
+      <div class="explainer__in">
+        <p class="lead"><strong>AI safety</strong> is the field working to make powerful AI systems reliable, honest, and controllable — so that as models get more capable, they stay aligned with what people actually want.</p>
+        <p style="margin:14px 0 0;">Most hands-on technical work clusters into a few practical tracks. This project's templates focus on the two with the lowest barrier to entry for a programmer: <strong>evaluations</strong> and <strong>mechanistic interpretability</strong>. You don't need a PhD — you need to be able to read code and run an experiment.</p>
+      </div>
+    </div>
+
+    <!-- GRAPH 4: MAP OF AI SAFETY -->
+    <div class="reveal">
+      <div class="kicker k-ink" style="margin-bottom:14px;">A field map · highlighted tracks are where you can start today</div>
+      <div class="map">
+        <div class="field field--on">
+          <div class="field__tag">Track A</div>
+          <h4>Evaluations</h4>
+          <p>Measure what a model actually does — capabilities, failure modes, dangerous behaviors — with reproducible tests.</p>
+          <span class="field__pill">Template ready</span>
+        </div>
+        <div class="field field--on">
+          <div class="field__tag">Track B</div>
+          <h4>Mech Interp</h4>
+          <p>Reverse-engineer the internals — circuits, features, activations — to understand <em>why</em> a model behaves as it does.</p>
+          <span class="field__pill">Template ready</span>
+        </div>
+        <div class="field">
+          <div class="field__tag">Adjacent</div>
+          <h4>Oversight &amp; Scalable Supervision</h4>
+          <p>Techniques for supervising systems that may be smarter than their supervisors.</p>
+        </div>
+        <div class="field">
+          <div class="field__tag">Adjacent</div>
+          <h4>Robustness</h4>
+          <p>Keeping behavior safe under adversarial pressure and distribution shift.</p>
+        </div>
+        <div class="field">
+          <div class="field__tag">Context</div>
+          <h4>Governance &amp; Policy</h4>
+          <p>The institutions, standards, and incentives around safe deployment.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- GLOSSARY -->
+    <div class="reveal" style="margin-top:38px;">
+      <div class="kicker k-ink" style="margin-bottom:14px;">Plain-language glossary</div>
+      <dl class="glossary">
+        <div class="term">
+          <span class="mono-tag">Concept</span>
+          <dt>Eval</dt>
+          <dd>A structured test that measures a specific model behavior — e.g. "does it follow instructions it shouldn't?" Results are numbers you can compare.</dd>
+        </div>
+        <div class="term">
+          <span class="mono-tag">Concept</span>
+          <dt>Mechanistic interpretability</dt>
+          <dd>Opening the black box: studying the internal computations of a model to explain its outputs rather than just observing them.</dd>
+        </div>
+        <div class="term">
+          <span class="mono-tag">Workflow</span>
+          <dt>Issue-as-experiment</dt>
+          <dd>One GitHub issue = one self-contained experiment, with a hypothesis, a method, and a result. The atomic, ownable unit of work.</dd>
+        </div>
+        <div class="term">
+          <span class="mono-tag">Role</span>
+          <dt>Mentor</dt>
+          <dd>An experienced researcher who drafts experiments, labels and assigns them, then reviews and integrates the results.</dd>
+        </div>
+        <div class="term">
+          <span class="mono-tag">Role</span>
+          <dt>Junior researcher</dt>
+          <dd>A newcomer who claims an open experiment, runs it, and opens a pull request with their findings.</dd>
+        </div>
+        <div class="term">
+          <span class="mono-tag">Tooling</span>
+          <dt>Pull request (PR)</dt>
+          <dd>How you submit work on GitHub. In this model, a finished experiment lands as a PR a mentor can review and merge.</dd>
+        </div>
+      </dl>
+    </div>
+
+    <!-- FIRST TWO WEEKS -->
+    <div class="reveal" style="margin-top:42px;">
+      <div class="kicker k-signal" style="margin-bottom:6px;">Your first two weeks</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step__n">1</div>
+          <div><h4>Open the public kanban</h4><p>Browse the board of illustrative tickets to see what a self-contained experiment looks like before you claim one.</p></div>
+        </div>
+        <div class="step">
+          <div class="step__n">2</div>
+          <div><h4>Claim a "good first experiment"</h4><p>Pick a labelled issue that matches your background, assign yourself, and you own it end to end.</p></div>
+        </div>
+        <div class="step">
+          <div class="step__n">3</div>
+          <div><h4>Run it &amp; open a pull request</h4><p>Follow the template, log your commands (optionally via Claude Code), and submit results as a PR.</p></div>
+        </div>
+        <div class="step">
+          <div class="step__n">4</div>
+          <div><h4>Get reviewed &amp; integrated</h4><p>A mentor reviews, gives feedback, and merges your work into the line that leads toward publication.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 03 · HOW IT WORKS ===================== -->
+<section id="how">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-head__num">03</div>
+      <div class="sec-head__txt">
+        <div class="kicker">The Mechanism</div>
+        <h2>The experiment lifecycle</h2>
+      </div>
+    </div>
+
+    <p class="lead reveal" style="max-width:780px;margin-bottom:30px;">An open-source repo becomes a structured apprenticeship: clear, ownable units of work with a built-in review and publication path. Here's the full loop from draft to publication.</p>
+
+    <!-- GRAPH 2: LIFECYCLE PIPELINE -->
+    <div class="reveal">
+      <div class="pipe">
+        <div class="stage">
+          <div class="stage__top"></div>
+          <div class="stage__role">Mentor</div>
+          <div class="stage__n">01</div>
+          <h4>Draft</h4>
+          <p>Write the experiment as a ticket — hypothesis, method, expected output.</p>
+          <div class="stage__arrow"></div>
+        </div>
+        <div class="stage stage--junior">
+          <div class="stage__top"></div>
+          <div class="stage__role">Junior</div>
+          <div class="stage__n">02</div>
+          <h4>Claim</h4>
+          <p>A researcher self-assigns the issue and takes ownership.</p>
+          <div class="stage__arrow"></div>
+        </div>
+        <div class="stage stage--junior">
+          <div class="stage__top"></div>
+          <div class="stage__role">Junior</div>
+          <div class="stage__n">03</div>
+          <h4>Run</h4>
+          <p>Execute the experiment; log exact commands and results.</p>
+          <div class="stage__arrow"></div>
+        </div>
+        <div class="stage">
+          <div class="stage__top"></div>
+          <div class="stage__role">Mentor</div>
+          <div class="stage__n">04</div>
+          <h4>Review</h4>
+          <p>Mentor reviews the pull request and gives feedback.</p>
+          <div class="stage__arrow"></div>
+        </div>
+        <div class="stage">
+          <div class="stage__top"></div>
+          <div class="stage__role">Mentor</div>
+          <div class="stage__n">05</div>
+          <h4>Integrate</h4>
+          <p>Merge the result into the wider research line.</p>
+          <div class="stage__arrow"></div>
+        </div>
+        <div class="stage">
+          <div class="stage__top"></div>
+          <div class="stage__role">Mentor</div>
+          <div class="stage__n">06</div>
+          <h4>Publish</h4>
+          <p>Carry the combined work through to publication &amp; publicity.</p>
+          <div class="stage__arrow"></div>
+        </div>
+      </div>
+      <div class="pipe-legend">
+        <span><i style="background:#002fa7;"></i>Mentor-owned step</span>
+        <span><i style="background:#ff3b1d;"></i>Junior-owned step</span>
+        <span><i style="background:#111;"></i>Runs on GitHub Projects · Slack · Claude Code</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 04 · PROOF OF CONCEPT ===================== -->
+<section id="proof">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-head__num">04</div>
+      <div class="sec-head__txt">
+        <div class="kicker">Evidence</div>
+        <h2>Proof of concept</h2>
+      </div>
+    </div>
+
+    <div class="twocol" style="margin-bottom:34px;">
+      <div class="reveal">
+        <p class="lead">The approach is modeled on <strong>temporal-awareness</strong>, where each issue functions as an experiment.</p>
+        <p>That repo was home base for <strong>20 research fellows</strong> from January to June. Most produced pull requests that fed into publications. It will also be the Open Safety Project's first testbed.</p>
+      </div>
+      <div class="reveal">
+        <!-- GRAPH 3: TIMELINE -->
+        <figure class="figure">
+          <figcaption class="figure__head">
+            <span class="ftitle">temporal-awareness cohort</span>
+            <span class="ftag">Fig. 3 — Timeline</span>
+          </figcaption>
+          <div class="figure__body">
+            <svg class="chart" viewBox="0 0 760 210" role="img" aria-label="Timeline from January to June showing the cohort of 20 fellows, experiments turning into pull requests, and work feeding into publications.">
+              <!-- run bar -->
+              <rect x="60" y="112" width="640" height="16" fill="#002fa7"/>
+              <!-- axis -->
+              <line x1="60" y1="150" x2="700" y2="150" stroke="#111" stroke-width="1.5"/>
+              <!-- month ticks -->
+              <g font-size="12" fill="#111" text-anchor="middle">
+                <line x1="60"  y1="150" x2="60"  y2="156" stroke="#111"/><text x="60"  y="174">JAN</text>
+                <line x1="188" y1="150" x2="188" y2="156" stroke="#111"/><text x="188" y="174">FEB</text>
+                <line x1="316" y1="150" x2="316" y2="156" stroke="#111"/><text x="316" y="174">MAR</text>
+                <line x1="444" y1="150" x2="444" y2="156" stroke="#111"/><text x="444" y="174">APR</text>
+                <line x1="572" y1="150" x2="572" y2="156" stroke="#111"/><text x="572" y="174">MAY</text>
+                <line x1="700" y1="150" x2="700" y2="156" stroke="#111"/><text x="700" y="174">JUN</text>
+              </g>
+              <!-- markers -->
+              <circle cx="60" cy="120" r="9" fill="#fff" stroke="#111" stroke-width="2"/>
+              <circle cx="380" cy="120" r="9" fill="#fff" stroke="#ff3b1d" stroke-width="2"/>
+              <circle cx="700" cy="120" r="9" fill="#111" stroke="#111" stroke-width="2"/>
+              <text x="60"  y="60" text-anchor="start"  font-size="12.5" font-weight="700" fill="#111">20 fellows start</text>
+              <text x="60"  y="78" text-anchor="start"  font-size="11"  fill="#5f5f5f">Issues = experiments</text>
+              <text x="380" y="60" text-anchor="middle" font-size="12.5" font-weight="700" fill="#ff3b1d">Experiments → PRs</text>
+              <text x="700" y="60" text-anchor="end"    font-size="12.5" font-weight="700" fill="#111">Fed into publications</text>
+              <!-- connector ticks -->
+              <line x1="60"  y1="88" x2="60"  y2="111" stroke="#111" stroke-width="1"/>
+              <line x1="380" y1="68" x2="380" y2="111" stroke="#ff3b1d" stroke-width="1"/>
+              <line x1="700" y1="68" x2="700" y2="111" stroke="#111" stroke-width="1"/>
+            </svg>
+          </div>
+          <div class="figure__note">Source — temporal-awareness, Jan–Jun. First testbed for this template.</div>
+        </figure>
+      </div>
+    </div>
+
+    <!-- STAT STRIP with animated counters -->
+    <div class="stats reveal">
+      <div class="stat">
+        <div class="stat__n"><span class="count" data-target="20">0</span></div>
+        <div class="stat__l">Research fellows<br />in the pilot cohort</div>
+      </div>
+      <div class="stat">
+        <div class="stat__n"><span class="count" data-target="6">0</span></div>
+        <div class="stat__l">Months, January<br />to June</div>
+      </div>
+      <div class="stat">
+        <div class="stat__n">PRs<span style="font-size:.5em;">→</span>pubs</div>
+        <div class="stat__l">Most fellows shipped work<br />that fed into publications</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 05 · WHAT WE'RE BUILDING ===================== -->
+<section id="build">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-head__num">05</div>
+      <div class="sec-head__txt">
+        <div class="kicker">The Next Two Weeks</div>
+        <h2>What we're building</h2>
+      </div>
+    </div>
+
+    <p class="lead reveal" style="max-width:820px;margin-bottom:30px;">A template repo for <strong>evals</strong> or <strong>mech interp</strong> with automations built in — so that out of the box, anyone can copy it and stand up their own research pipeline.</p>
+
+    <div class="build reveal">
+      <div class="check">
+        <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><rect width="22" height="22" fill="#002fa7"/><path d="M5 11.5l4 4 8-9" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div><h4>Mentors create, label &amp; assign experiments</h4><p>Draft self-contained tickets with structured labels and ownership baked into the workflow.</p></div>
+      </div>
+      <div class="check">
+        <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><rect width="22" height="22" fill="#002fa7"/><path d="M5 11.5l4 4 8-9" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div><h4>Junior researchers claim &amp; run them</h4><p>Self-assign an open experiment, execute it, and submit results as a pull request.</p></div>
+      </div>
+      <div class="check">
+        <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><rect width="22" height="22" fill="#002fa7"/><path d="M5 11.5l4 4 8-9" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div><h4>Mentors review, integrate &amp; publish</h4><p>Review PRs, merge results into the research line, and carry them through to publication and publicity.</p></div>
+      </div>
+      <div class="check">
+        <svg width="22" height="22" viewBox="0 0 22 22" aria-hidden="true"><rect width="22" height="22" fill="#002fa7"/><path d="M5 11.5l4 4 8-9" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <div><h4>Anyone can copy the template</h4><p>Fork it once and stand up a complete, scalable research-management pipeline of your own.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== 06 · TEAM ===================== -->
+<section id="team">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-head__num">06</div>
+      <div class="sec-head__txt">
+        <div class="kicker">Masthead</div>
+        <h2>The team</h2>
+      </div>
+    </div>
+
+    <div class="team reveal">
+      <div class="member">
+        <div class="avatar">JS</div>
+        <h4>Justin Shenk</h4>
+        <div class="role">Organizing</div>
+      </div>
+      <div class="member">
+        <div class="avatar">AK</div>
+        <h4>Anirudh Krishnan</h4>
+        <div class="role">Prompting &amp; specifications</div>
+      </div>
+      <div class="member">
+        <div class="avatar">OT</div>
+        <h4>Orlando Torres</h4>
+        <div class="role">Evals &amp; frontend</div>
+      </div>
+      <div class="member">
+        <div class="avatar">RR</div>
+        <h4>Rebecca Rempe</h4>
+        <div class="role">Testing</div>
+      </div>
+      <div class="member">
+        <div class="avatar">PB</div>
+        <h4>Phil Brandfort</h4>
+        <div class="role">Ideation</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== BACKGROUND ===================== -->
+<section id="background">
+  <div class="wrap">
+    <div class="sec-head reveal">
+      <div class="sec-head__txt">
+        <div class="kicker">Provenance</div>
+        <h2>Background</h2>
+      </div>
+    </div>
+
+    <p class="lead reveal" style="max-width:820px;margin-bottom:6px;">The project grows out of many conversations and four threads:</p>
+
+    <ol class="bg-list reveal">
+      <li><span class="bn">1</span><span>A need discovered through ideation for <strong>automating research management</strong>, primarily with Justin Shenk and Phil Blandfort.</span></li>
+      <li><span class="bn">2</span><span>A <strong>BlueDot Impact</strong> Technical AI Safety course project involving the founding team.</span></li>
+      <li><span class="bn">3</span><span>Justin Shenk's experience leading tech and research at <strong>VisioLab</strong> (managing 10 remote interns, 2020–2022), mentoring for Google Summer of Code, and currently mentoring across AI Safety Camp, SPAR, SAIGE, and CORDA Democracy — alongside facilitating BlueDot Impact courses and contracting with Equistamp for Redwood Research and METR. He interviewed several independent AI safety researchers who all look for more community and better automation of the research-management workflow.</span></li>
+      <li><span class="bn">4</span><span>Positive feedback from <strong>Justin Dollman</strong> (MARS) and <strong>Patryk Wielopolski</strong> (MATS).</span></li>
+    </ol>
+
+    <div class="reveal" style="margin-top:44px;">
+      <div class="kicker k-signal" style="margin-bottom:18px;">On the horizon · Future directions</div>
+      <div class="future">
+        <div class="fcard">
+          <div class="fn">Direction 01</div>
+          <h4>Factored cognition</h4>
+          <p>A factored-cognition-style approach to break research tasks down into ownable units automatically.</p>
+        </div>
+        <div class="fcard">
+          <div class="fn">Direction 02</div>
+          <h4>Ranking &amp; gamification</h4>
+          <p>Rank researchers and add game mechanics to motivate sustained, high-quality contribution.</p>
+        </div>
+        <div class="fcard">
+          <div class="fn">Direction 03</div>
+          <h4>AI-native research</h4>
+          <p>LLM-powered research that bridges AI-native researchers to the world of citations and recognition.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== DISCOVERY ===================== -->
+<section class="discovery" id="discovery">
+  <div class="wrap">
+    <div class="reveal">
+      <div class="kicker">Call for Input</div>
+      <h2 style="margin-top:14px;max-width:760px;">Questions for discovery with independent researchers</h2>
+      <ol class="q-list">
+        <li><span class="qn">Q1</span><span>How do you currently scale research access?</span></li>
+        <li><span class="qn">Q2</span><span>What limitations do you find?</span></li>
+        <li><span class="qn">Q3</span><span>What would you want in a repo template that allows scalable research management and community?</span></li>
+      </ol>
+      <div class="hero__cta" style="margin-top:34px;">
+        <a class="btn btn--signal" href="https://github.com/users/justinshenk/projects/2" target="_blank" rel="noopener">Join the conversation on GitHub ↗</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+<footer>
+  <div class="wrap">
+    <div class="reveal foot__name">The Open Safety Project</div>
+    <div class="foot__row reveal">
+      <div class="foot__links">
+        <a href="https://github.com/users/justinshenk/projects/2" target="_blank" rel="noopener">Public Kanban ↗</a>
+        <a href="#start">Start Here</a>
+        <a href="#how">How It Works</a>
+        <a href="#proof">Proof</a>
+        <a href="#team">Team</a>
+      </div>
+      <div class="foot__meta">
+        Scalable community &amp; research infrastructure for independent AI safety research. Open source. Copy the template, stand up your own pipeline.
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ---- Scroll reveal ----
+  (function () {
+    var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var items = document.querySelectorAll('.reveal');
+    if (reduce || !('IntersectionObserver' in window)) {
+      items.forEach(function (el) { el.classList.add('is-visible'); });
+      runCounters();
+      return;
+    }
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) {
+          e.target.classList.add('is-visible');
+          io.unobserve(e.target);
+        }
+      });
+    }, { threshold: 0.14, rootMargin: '0px 0px -8% 0px' });
+    items.forEach(function (el) { io.observe(el); });
+
+    // ---- Animated stat counters ----
+    var counters = document.querySelectorAll('.count');
+    var cio = new IntersectionObserver(function (entries) {
+      entries.forEach(function (e) {
+        if (e.isIntersecting) { animate(e.target); cio.unobserve(e.target); }
+      });
+    }, { threshold: 0.6 });
+    counters.forEach(function (c) { cio.observe(c); });
+
+    function animate(el) {
+      var target = parseInt(el.getAttribute('data-target'), 10);
+      var dur = 1100, start = null;
+      function step(ts) {
+        if (!start) start = ts;
+        var p = Math.min((ts - start) / dur, 1);
+        var eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(eased * target);
+        if (p < 1) requestAnimationFrame(step);
+        else el.textContent = target;
+      }
+      requestAnimationFrame(step);
+    }
+    function runCounters() {
+      document.querySelectorAll('.count').forEach(function (c) {
+        c.textContent = c.getAttribute('data-target');
+      });
+    }
+  })();
+</script>
+</body>
+</html>
